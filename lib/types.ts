@@ -13,6 +13,7 @@ export interface Mine {
   depositType?: string;
   estimatedProspectivityScore?: number;
   highPotentialZonesCount?: number;
+  totalEstimatedOreTonnes?: number;
 }
 
 export interface IndicatorScore {
@@ -39,6 +40,8 @@ export interface ProspectivityZone {
   indicators: IndicatorScore;
   recommendedAction: string;
   areaHectares: number;
+  estimatedOreTonnes: number; // Estimated ore extraction potential in Tonnes
+  estimatedGradeMn: number; // Estimated Manganese Ore Grade (% Mn)
 }
 
 export interface ProductionRecord {

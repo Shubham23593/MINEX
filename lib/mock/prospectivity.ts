@@ -12,6 +12,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'VERY_HIGH',
       priority: 'URGENT',
       areaHectares: 14.2,
+      estimatedOreTonnes: 185000,
+      estimatedGradeMn: 44.2,
       center: [21.817, 80.188],
       geometry: {
         type: 'Polygon',
@@ -42,6 +44,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'HIGH',
       priority: 'HIGH',
       areaHectares: 18.6,
+      estimatedOreTonnes: 142000,
+      estimatedGradeMn: 39.8,
       center: [21.812, 80.182],
       geometry: {
         type: 'Polygon',
@@ -72,6 +76,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'HIGH',
       priority: 'HIGH',
       areaHectares: 22.1,
+      estimatedOreTonnes: 118000,
+      estimatedGradeMn: 37.5,
       center: [21.806, 80.189],
       geometry: {
         type: 'Polygon',
@@ -102,6 +108,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'MODERATE',
       priority: 'MEDIUM',
       areaHectares: 11.5,
+      estimatedOreTonnes: 65000,
+      estimatedGradeMn: 34.1,
       center: [21.810, 80.175],
       geometry: {
         type: 'Polygon',
@@ -132,6 +140,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'LOW',
       priority: 'LOW',
       areaHectares: 30.4,
+      estimatedOreTonnes: 38000,
+      estimatedGradeMn: 29.5,
       center: [21.819, 80.196],
       geometry: {
         type: 'Polygon',
@@ -164,6 +174,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'VERY_HIGH',
       priority: 'URGENT',
       areaHectares: 16.8,
+      estimatedOreTonnes: 210000,
+      estimatedGradeMn: 43.5,
       center: [21.353, 79.652],
       geometry: {
         type: 'Polygon',
@@ -194,6 +206,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'HIGH',
       priority: 'HIGH',
       areaHectares: 20.3,
+      estimatedOreTonnes: 175000,
+      estimatedGradeMn: 38.9,
       center: [21.347, 79.646],
       geometry: {
         type: 'Polygon',
@@ -226,6 +240,8 @@ export const MOCK_PROSPECTIVITY_ZONES: Record<string, ProspectivityZone[]> = {
       potential: 'VERY_HIGH',
       priority: 'URGENT',
       areaHectares: 12.9,
+      estimatedOreTonnes: 195000,
+      estimatedGradeMn: 41.8,
       center: [21.653, 80.383],
       geometry: {
         type: 'Polygon',

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { ProductionRecord } from '@/lib/types';
-import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Table } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Table, Play, Sparkles } from 'lucide-react';
 
 interface CSVUploaderProps {
   onDataLoaded: (records: ProductionRecord[], fileName: string) => void;
@@ -14,6 +14,7 @@ export default function CSVUploader({ onDataLoaded, onStartProcess }: CSVUploade
   const [records, setRecords] = useState<ProductionRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isSampleLoading, setIsSampleLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const parseCSVText = (text: string): ProductionRecord[] => {
@@ -71,12 +72,38 @@ export default function CSVUploader({ onDataLoaded, onStartProcess }: CSVUploade
         }
         setRecords(parsed);
         onDataLoaded(parsed, selectedFile.name);
+        onStartProcess();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Error parsing CSV file format.';
         setError(message);
       }
     };
     reader.readAsText(selectedFile);
+  };
+
+  const handleLoadSampleData = async () => {
+    setError(null);
+    setIsSampleLoading(true);
+    try {
+      const response = await fetch('/data/production_history.csv');
+      let text = '';
+      if (response.ok) {
+        text = await response.text();
+      } else {
+        text = `date,shift,mine_id,face_id,planned_tonnes,actual_tonnes,ore_grade,stockpile_tonnes,operating_hours,downtime_hours,downtime_reason,availability,blast_delay_hours,blast_status,rainfall_mm,soil_moisture,land_temperature,haul_road_condition\n2026-01-01,C,MOIL-BAL,F01,444.3,433.8,36.99,1158.7,16.0,2.5,None,0.896,0.0,Completed,9.01,0.3,29.91,Wet\n2026-01-02,A,MOIL-BAL,F01,466.3,414.4,39.87,1190.6,19.4,2.97,None,0.876,2.4,Completed,8.44,0.323,28.39,Wet\n2026-01-03,A,MOIL-BAL,F02,431.0,363.7,34.38,1179.9,20.4,5.29,Maintenance,0.78,1.85,Completed,3.34,0.239,27.43,Good\n2026-01-04,B,MOIL-BAL,F03,385.2,311.5,38.67,1120.0,14.6,6.89,None,0.713,0.0,Completed,19.1,0.475,31.86,Poor\n2026-01-05,A,MOIL-BAL,F01,413.7,373.3,35.6,1156.1,18.4,1.59,None,0.934,6.13,Delayed,4.66,0.344,28.58,Good`;
+      }
+      const parsed = parseCSVText(text);
+      setRecords(parsed);
+      const sampleFile = new File([text], 'MOIL_Balaghat_Operations_2026.csv', { type: 'text/csv' });
+      setFile(sampleFile);
+      onDataLoaded(parsed, 'MOIL_Balaghat_Operations_2026.csv');
+      onStartProcess();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load sample dataset.';
+      setError(message);
+    } finally {
+      setIsSampleLoading(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -88,20 +115,29 @@ export default function CSVUploader({ onDataLoaded, onStartProcess }: CSVUploade
   };
 
   return (
-    <div className="bg-[#0c1222] border border-slate-800 rounded-xl p-6 shadow-xl space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5 text-emerald-400" />
-            Upload Historical Production & Operations Data
+          <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
+            Upload Historical Production & Operations Dataset
           </h2>
-          <p className="text-xs text-slate-400">
-            Upload daily mine shift records (planned vs actual tonnes, downtime, blast delays, weather)
+          <p className="text-xs text-slate-500 font-medium">
+            Upload daily mine shift logs (planned vs actual tonnes, downtime, blast delays, weather) for automated ML training
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={handleLoadSampleData}
+          disabled={isSampleLoading}
+          className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-2xs cursor-pointer disabled:opacity-50"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+          {isSampleLoading ? 'Loading Sample Dataset...' : 'Load Sample MOIL Dataset (180+ Records)'}
+        </button>
       </div>
 
-      {/* Drag and Drop Zone */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -112,10 +148,10 @@ export default function CSVUploader({ onDataLoaded, onStartProcess }: CSVUploade
         onClick={() => fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
           isDragOver
-            ? 'border-emerald-400 bg-emerald-950/20 scale-[1.01]'
+            ? 'border-emerald-500 bg-emerald-50 scale-[1.01]'
             : file
-            ? 'border-emerald-500/50 bg-slate-900/60'
-            : 'border-slate-700 bg-slate-900/30 hover:border-slate-500 hover:bg-slate-900/50'
+            ? 'border-emerald-300 bg-emerald-50/40'
+            : 'border-slate-300 bg-slate-50/50 hover:border-slate-400 hover:bg-slate-100/60'
         }`}
       >
         <input
@@ -129,75 +165,73 @@ export default function CSVUploader({ onDataLoaded, onStartProcess }: CSVUploade
         />
 
         <div className="flex flex-col items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-emerald-400 shadow-md">
+          <div className="h-12 w-12 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-emerald-600 shadow-xs">
             <Upload className="h-6 w-6" />
           </div>
 
           {!file ? (
             <div>
-              <p className="text-sm font-semibold text-slate-200">
+              <p className="text-sm font-bold text-slate-800">
                 Drag and drop your production CSV file here, or{' '}
-                <span className="text-emerald-400 underline">browse</span>
+                <span className="text-emerald-700 underline">browse</span>
               </p>
-              <p className="text-xs text-slate-500 mt-1">Accepts .csv and .xlsx files (Max size: 10MB)</p>
+              <p className="text-xs text-slate-500 font-medium mt-1">Accepts .csv and .xlsx files (Auto-trains on upload)</p>
             </div>
           ) : (
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+              <div className="flex items-center gap-2 text-sm font-extrabold text-emerald-800">
                 <CheckCircle2 className="h-4 w-4" />
                 {file.name} ({(file.size / 1024).toFixed(1)} KB)
               </div>
-              <p className="text-xs text-slate-400">
-                {records.length} records parsed successfully • Status: Validated
+              <p className="text-xs text-slate-600 font-medium">
+                {records.length} records parsed • Status: Auto-Training & Forecast Active
               </p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Error notification */}
       {error && (
-        <div className="p-3 rounded-lg bg-red-950/40 border border-red-500/40 flex items-center gap-2 text-xs text-red-300">
-          <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs text-red-800 font-medium">
+          <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Preview Table of Parsed Records */}
       {records.length > 0 && (
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
-              <Table className="h-4 w-4 text-emerald-400" /> Preview First 5 Dataset Records
+            <span className="font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
+              <Table className="h-4 w-4 text-emerald-600" /> Dataset Preview (First 5 Records)
             </span>
-            <span className="text-slate-400">Total Records: {records.length}</span>
+            <span className="text-slate-600 font-mono font-semibold">Total Dataset Records: {records.length}</span>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-slate-800">
-            <table className="w-full text-left text-[11px] text-slate-300">
-              <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="w-full text-left text-[11px] text-slate-700">
+              <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                 <tr>
-                  <th className="py-2 px-3">Date</th>
-                  <th className="py-2 px-3">Shift</th>
-                  <th className="py-2 px-3">Face</th>
-                  <th className="py-2 px-3">Planned (T)</th>
-                  <th className="py-2 px-3">Actual (T)</th>
-                  <th className="py-2 px-3">Downtime (h)</th>
-                  <th className="py-2 px-3">Blast Delay (h)</th>
-                  <th className="py-2 px-3">Rainfall (mm)</th>
+                  <th className="py-2.5 px-3">Date</th>
+                  <th className="py-2.5 px-3">Shift</th>
+                  <th className="py-2.5 px-3">Face</th>
+                  <th className="py-2.5 px-3">Planned (T)</th>
+                  <th className="py-2.5 px-3">Actual (T)</th>
+                  <th className="py-2.5 px-3">Downtime (h)</th>
+                  <th className="py-2.5 px-3">Blast Delay (h)</th>
+                  <th className="py-2.5 px-3">Rainfall (mm)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 bg-slate-950/60">
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {records.slice(0, 5).map((r, i) => (
-                  <tr key={i} className="hover:bg-slate-800/30">
-                    <td className="py-2 px-3 font-mono">{r.date}</td>
-                    <td className="py-2 px-3 font-semibold">{r.shift}</td>
+                  <tr key={i} className="hover:bg-slate-50">
+                    <td className="py-2 px-3 font-mono font-medium">{r.date}</td>
+                    <td className="py-2 px-3 font-bold">{r.shift}</td>
                     <td className="py-2 px-3">{r.faceId}</td>
-                    <td className="py-2 px-3 font-mono font-bold text-slate-200">{r.plannedTonnes}</td>
-                    <td className="py-2 px-3 font-mono font-bold text-emerald-400">{r.actualTonnes}</td>
-                    <td className="py-2 px-3 text-orange-400">{r.downtimeHours}</td>
-                    <td className="py-2 px-3 text-yellow-400">{r.blastDelayHours}</td>
-                    <td className="py-2 px-3 text-slate-400">{r.rainfallMm}</td>
+                    <td className="py-2 px-3 font-mono font-bold text-slate-900">{r.plannedTonnes}</td>
+                    <td className="py-2 px-3 font-mono font-bold text-emerald-700">{r.actualTonnes}</td>
+                    <td className="py-2 px-3 text-orange-700 font-medium">{r.downtimeHours}</td>
+                    <td className="py-2 px-3 text-yellow-700 font-medium">{r.blastDelayHours}</td>
+                    <td className="py-2 px-3 text-slate-600">{r.rainfallMm}</td>
                   </tr>
                 ))}
               </tbody>
@@ -207,10 +241,10 @@ export default function CSVUploader({ onDataLoaded, onStartProcess }: CSVUploade
           <button
             type="button"
             onClick={onStartProcess}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-950/40 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <CheckCircle2 className="h-5 w-5" />
-            PROCESS & TRAIN MODEL
+            <Play className="h-4 w-4 fill-white" />
+            RE-RUN MODEL TRAINING & FORECAST PIPELINE
           </button>
         </div>
       )}

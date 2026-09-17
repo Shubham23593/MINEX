@@ -6,7 +6,7 @@ import DynamicMapWrapper from '@/components/map/DynamicMapWrapper';
 import PipelineProgress from '@/components/exploration/PipelineProgress';
 import ZoneDetailModal from '@/components/exploration/ZoneDetailModal';
 import ExplorationTable from '@/components/exploration/ExplorationTable';
-import { MOCK_PROSPECTIVITY_ZONES } from '@/lib/mock/prospectivity';
+import { getProspectivityZonesForMine } from '@/lib/services/mineSearchService';
 import { ProspectivityZone } from '@/lib/types';
 import {
   Compass,
@@ -14,8 +14,8 @@ import {
   CheckCircle2,
   MapPin,
   Globe,
-  ShieldAlert,
   Flame,
+  Pickaxe,
 } from 'lucide-react';
 
 export default function ExplorationPage() {
@@ -26,8 +26,12 @@ export default function ExplorationPage() {
   const [selectedZone, setSelectedZone] = useState<ProspectivityZone | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
 
-  const zones =
-    MOCK_PROSPECTIVITY_ZONES[selectedMine.id] || MOCK_PROSPECTIVITY_ZONES['MOIL-BAL'];
+  const zones = getProspectivityZonesForMine(selectedMine);
+
+  const totalOrePotential = zones.reduce(
+    (acc, z) => acc + (z.estimatedOreTonnes || 0),
+    0
+  );
 
   const handleRunAnalysis = () => {
     setIsAnalyzing(true);
@@ -42,50 +46,50 @@ export default function ExplorationPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Page Title & Controls */}
-      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-2">
-              <Compass className="h-3.5 w-3.5" /> Module 1 — Manganese Prospectivity
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-bold mb-2">
+              <Compass className="h-3.5 w-3.5 text-emerald-700" /> Module 1 — Manganese Prospectivity & Mining Zones
             </div>
-            <h1 className="text-2xl font-extrabold text-slate-100">
-              Manganese Prospectivity Analysis
+            <h1 className="text-2xl font-extrabold text-slate-900">
+              Manganese Prospectivity & Extraction Analysis
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Identify potential manganese ore horizons using Sentinel-2 multispectral bands and SRTM DEM elevation features.
+            <p className="text-xs text-slate-600 font-medium mt-1">
+              Identify potential manganese ore horizons and estimate available extraction tonnage using Sentinel-2 multispectral bands and SRTM DEM elevation features.
             </p>
           </div>
 
           {/* Control Panel */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-2 rounded-xl text-xs">
-              <MapPin className="h-4 w-4 text-emerald-400" />
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 px-3 py-2 rounded-xl text-xs">
+              <MapPin className="h-4 w-4 text-emerald-700" />
               <select
                 value={selectedMine.id}
                 onChange={(e) => {
                   const found = mines.find((m) => m.id === e.target.value);
                   if (found) setSelectedMine(found);
                 }}
-                className="bg-transparent text-slate-100 font-semibold focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-900 font-bold focus:outline-none cursor-pointer"
               >
                 {mines.map((mine) => (
-                  <option key={mine.id} value={mine.id} className="bg-slate-900 text-slate-100">
+                  <option key={mine.id} value={mine.id} className="bg-white text-slate-900">
                     {mine.name}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-2 rounded-xl text-xs">
-              <span className="text-slate-400 font-medium">Period:</span>
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 px-3 py-2 rounded-xl text-xs">
+              <span className="text-slate-500 font-bold">Period:</span>
               <select
                 value={analysisYear}
                 onChange={(e) => setAnalysisYear(e.target.value)}
-                className="bg-transparent text-slate-100 font-semibold focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-900 font-bold focus:outline-none cursor-pointer"
               >
-                <option value="2026" className="bg-slate-900">2026 (Latest Sentinel-2)</option>
-                <option value="2025" className="bg-slate-900">2025 Archive</option>
-                <option value="2024" className="bg-slate-900">2024 Baseline</option>
+                <option value="2026" className="bg-white">2026 (Latest Sentinel-2)</option>
+                <option value="2025" className="bg-white">2025 Archive</option>
+                <option value="2024" className="bg-white">2024 Baseline</option>
               </select>
             </div>
 
@@ -93,7 +97,7 @@ export default function ExplorationPage() {
               type="button"
               onClick={handleRunAnalysis}
               disabled={isAnalyzing}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/40 transition-all flex items-center gap-2 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <Play className="h-4 w-4 fill-white" />
               {isAnalyzing ? 'RUNNING PIPELINE...' : 'RUN PROSPECTIVITY ANALYSIS'}
@@ -110,63 +114,63 @@ export default function ExplorationPage() {
 
         {/* Status Badge */}
         {analysisComplete && !isAnalyzing && (
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-500/30 px-3 py-1.5 rounded-lg w-fit">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            Analysis Complete • Model Confidence: 87.5% • GEE Sentinel-2 Synced
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg w-fit">
+            <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+            Analysis Complete • Model Confidence: 87.5% • Sentinel-2 Multi-Spectral Active
           </div>
         )}
       </div>
 
-      {/* Mine Info Summary Bar */}
+      {/* Mine Info & Total Ore Potential Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-        <div className="bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-center">
-          <p className="text-[10px] text-slate-500 uppercase font-semibold">Mine Name</p>
-          <p className="text-xs font-bold text-slate-100 mt-0.5 truncate">{selectedMine.name}</p>
+        <div className="bg-white border border-slate-200 p-3 rounded-xl text-center shadow-2xs">
+          <p className="text-[10px] text-slate-400 uppercase font-bold">Mine Name</p>
+          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{selectedMine.name}</p>
         </div>
-        <div className="bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-center">
-          <p className="text-[10px] text-slate-500 uppercase font-semibold">District / State</p>
-          <p className="text-xs font-bold text-slate-100 mt-0.5 truncate">
+        <div className="bg-white border border-slate-200 p-3 rounded-xl text-center shadow-2xs">
+          <p className="text-[10px] text-slate-400 uppercase font-bold">District / State</p>
+          <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">
             {selectedMine.district}, {selectedMine.state}
           </p>
         </div>
-        <div className="bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-center">
-          <p className="text-[10px] text-slate-500 uppercase font-semibold">Latitude</p>
-          <p className="text-xs font-mono font-bold text-emerald-400 mt-0.5">{selectedMine.latitude}°N</p>
+        <div className="bg-white border border-slate-200 p-3 rounded-xl text-center shadow-2xs">
+          <p className="text-[10px] text-slate-400 uppercase font-bold">Mine Area</p>
+          <p className="text-xs font-bold text-slate-900 mt-0.5">{selectedMine.area} km²</p>
         </div>
-        <div className="bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-center">
-          <p className="text-[10px] text-slate-500 uppercase font-semibold">Longitude</p>
-          <p className="text-xs font-mono font-bold text-emerald-400 mt-0.5">{selectedMine.longitude}°E</p>
+        <div className="bg-white border border-slate-200 p-3 rounded-xl text-center shadow-2xs">
+          <p className="text-[10px] text-slate-400 uppercase font-bold">Target Zones</p>
+          <p className="text-xs font-bold text-emerald-700 mt-0.5">{zones.length} Mining Zones</p>
         </div>
-        <div className="bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-center">
-          <p className="text-[10px] text-slate-500 uppercase font-semibold">Mine Area</p>
-          <p className="text-xs font-bold text-slate-100 mt-0.5">{selectedMine.area} km²</p>
-        </div>
-        <div className="bg-[#0c1222] border border-slate-800 p-3 rounded-xl text-center">
-          <p className="text-[10px] text-slate-500 uppercase font-semibold">Ore Type</p>
-          <p className="text-xs font-bold text-teal-400 mt-0.5 truncate">Gondite Metamorphic</p>
+        <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-center col-span-2 shadow-2xs">
+          <p className="text-[10px] text-emerald-800 uppercase font-bold flex items-center justify-center gap-1">
+            <Pickaxe className="h-3.5 w-3.5 text-emerald-600" /> Total Est. Manganese Ore Potential
+          </p>
+          <p className="text-sm font-extrabold text-slate-900 mt-0.5 font-mono">
+            {totalOrePotential.toLocaleString('en-US')} Tonnes
+          </p>
         </div>
       </div>
 
       {/* Main Interactive Map */}
-      <div className="bg-[#0c1222] border border-slate-800 rounded-2xl p-4 shadow-2xl space-y-3">
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between px-2">
           <div>
-            <h2 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-              <Globe className="h-4 w-4 text-emerald-400" />
+            <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <Globe className="h-4 w-4 text-emerald-600" />
               Spatial Prospectivity & Heatmap Overlay ({selectedMine.name})
             </h2>
-            <p className="text-xs text-slate-400">
-              Click any colored zone polygon to inspect multi-sensor indicators and recommended field verification actions
+            <p className="text-xs text-slate-500 font-medium">
+              Click any colored zone polygon to inspect multi-sensor indicators, estimated ore production (Tonnes), and recommended field verification actions
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               showHeatmap
-                ? 'bg-red-500/20 text-red-300 border-red-500/40'
-                : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'
+                ? 'bg-red-100 text-red-800 border-red-300'
+                : 'bg-slate-100 text-slate-700 border-slate-300 hover:text-slate-900'
             }`}
           >
             <Flame className="h-3.5 w-3.5" />
@@ -190,14 +194,6 @@ export default function ExplorationPage() {
 
       {/* Zone Details Modal */}
       <ZoneDetailModal zone={selectedZone} onClose={() => setSelectedZone(null)} />
-
-      {/* Mandatory Regulatory Disclaimer */}
-      <div className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 flex items-start gap-3 text-xs text-amber-300">
-        <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold text-amber-200">Decision Support Disclaimer:</span> Prototype prediction for demonstration. Production deployment requires validated GSI geological survey data, satellite spectral ground-truthing, and exploratory diamond core drilling. Outputs represent &quot;Prospectivity&quot; and &quot;Exploration Priority&quot;, not certified reserves.
-        </div>
-      </div>
     </div>
   );
 }

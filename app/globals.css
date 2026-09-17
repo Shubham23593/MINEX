@@ -2,8 +2,8 @@
 
 @layer base {
   :root {
-    --background: #060913;
-    --foreground: #e2e8f0;
+    --background: #f8fafc;
+    --foreground: #0f172a;
   }
 
   body {
@@ -14,28 +14,28 @@
   }
 }
 
-/* Custom Scrollbar for dark theme */
+/* Custom Scrollbar for crisp light theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d18;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94a3b8;
 }
 
-/* Leaflet map custom styling for dark mode GIS feel */
+/* Leaflet map custom styling for clean light mode GIS feel */
 .leaflet-container {
-  background: #060a14 !important;
+  background: #e2e8f0 !important;
   font-family: inherit;
   width: 100%;
   height: 100%;
@@ -43,24 +43,24 @@
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
   border-radius: 0.5rem !important;
 }
 
 .leaflet-popup-tip {
-  background-color: #0f172a !important;
+  background-color: #ffffff !important;
 }
 
 /* Pulse keyframes for active GIS nodes */
 @keyframes map-pulse {
   0%, 100% {
-    opacity: 0.8;
+    opacity: 0.9;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.4;
   }
 }
 

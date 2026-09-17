@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark h-full antialiased">
-      <body className={`${inter.className} min-h-full flex bg-[#060913] text-slate-100`}>
+    <html lang="en" className="light h-full antialiased">
+      <body className={`${inter.className} min-h-full flex bg-slate-50 text-slate-900`}>
         <MineProvider>
           <div className="flex w-full min-h-screen">
             <Sidebar />

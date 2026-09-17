@@ -42,7 +42,7 @@ export default function ProspectivityMap({
   onSelectZone,
   showHeatmapOverlay = false,
 }: ProspectivityMapProps) {
-  const [mapTileStyle, setMapTileStyle] = useState<'dark' | 'satellite'>('dark');
+  const [mapTileStyle, setMapTileStyle] = useState<'light' | 'satellite'>('light');
   const mineCenter: [number, number] = [mine.latitude, mine.longitude];
 
   const mineBoundary: [number, number][] = [
@@ -53,7 +53,7 @@ export default function ProspectivityMap({
   ];
 
   return (
-    <div className="relative w-full h-full min-h-[420px] rounded-xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 flex flex-col">
+    <div className="relative w-full h-full min-h-[420px] rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 flex flex-col">
       <MapContainer
         center={mineCenter}
         zoom={13}
@@ -62,10 +62,10 @@ export default function ProspectivityMap({
       >
         <MapRecenter center={mineCenter} zoom={13} />
 
-        {mapTileStyle === 'dark' ? (
+        {mapTileStyle === 'light' ? (
           <TileLayer
-            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
         ) : (
           <TileLayer
@@ -77,15 +77,15 @@ export default function ProspectivityMap({
         <Polygon
           positions={mineBoundary}
           pathOptions={{
-            color: '#10b981',
+            color: '#059669',
             weight: 2,
             dashArray: '6, 6',
             fillColor: '#10b981',
-            fillOpacity: 0.04,
+            fillOpacity: 0.06,
           }}
         >
           <Tooltip sticky>
-            <div className="text-xs font-semibold text-emerald-400">
+            <div className="text-xs font-bold text-emerald-800">
               {mine.name} AOI Boundary ({mine.area} km²)
             </div>
           </Tooltip>
@@ -100,7 +100,7 @@ export default function ProspectivityMap({
               key={zone.id}
               positions={zone.geometry.coordinates}
               pathOptions={{
-                color: isSelected ? '#ffffff' : style.stroke,
+                color: isSelected ? '#000000' : style.stroke,
                 weight: isSelected ? 3 : 2,
                 fillColor: style.fill,
                 fillOpacity: showHeatmapOverlay ? 0.65 : 0.4,
@@ -112,9 +112,9 @@ export default function ProspectivityMap({
               }}
             >
               <Popup>
-                <div className="p-1 min-w-[200px]">
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1.5 mb-2">
-                    <span className="font-bold text-sm text-slate-100">{zone.name}</span>
+                <div className="p-1 min-w-[220px]">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-1.5 mb-2">
+                    <span className="font-bold text-sm text-slate-900">{zone.name}</span>
                     <span
                       className="text-[10px] uppercase font-bold px-2 py-0.5 rounded text-white"
                       style={{ backgroundColor: style.fill }}
@@ -122,26 +122,37 @@ export default function ProspectivityMap({
                       {zone.potential.replace('_', ' ')}
                     </span>
                   </div>
-                  <div className="space-y-1 text-xs text-slate-300">
+                  <div className="space-y-1.5 text-xs text-slate-700">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Prospectivity Score:</span>
-                      <span className="font-semibold text-emerald-400">{zone.score}%</span>
+                      <span className="text-slate-500 font-medium">Prospectivity Score:</span>
+                      <span className="font-bold text-emerald-700">{zone.score}%</span>
+                    </div>
+                    {zone.estimatedOreTonnes && (
+                      <div className="flex justify-between border-y border-slate-100 py-1">
+                        <span className="text-slate-600 font-medium">Est. Ore Potential:</span>
+                        <span className="font-extrabold text-teal-800">
+                          {zone.estimatedOreTonnes.toLocaleString('en-US')} T ({zone.estimatedGradeMn}% Mn)
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 font-medium">Confidence:</span>
+                      <span className="font-semibold text-slate-900">{zone.confidence}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Confidence:</span>
-                      <span className="font-semibold text-slate-200">{zone.confidence}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Priority:</span>
-                      <span className="font-semibold text-orange-400">{zone.priority}</span>
+                      <span className="text-slate-500 font-medium">Priority:</span>
+                      <span className="font-bold text-orange-600">{zone.priority}</span>
                     </div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => onSelectZone && onSelectZone(zone)}
-                    className="mt-3 w-full py-1 px-2 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center justify-center gap-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onSelectZone) onSelectZone(zone);
+                    }}
+                    className="mt-3 w-full py-1.5 px-2 text-xs font-bold rounded bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center gap-1 shadow-xs cursor-pointer"
                   >
-                    <Eye className="h-3 w-3" /> Inspect Zone Indicators
+                    <Eye className="h-3.5 w-3.5" /> Inspect Zone Indicators
                   </button>
                 </div>
               </Popup>
@@ -150,41 +161,41 @@ export default function ProspectivityMap({
         })}
       </MapContainer>
 
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-lg border border-slate-800 shadow-lg text-xs">
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-200 shadow-md text-xs">
         <button
           type="button"
-          onClick={() => setMapTileStyle(mapTileStyle === 'dark' ? 'satellite' : 'dark')}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition-all ${
-            mapTileStyle === 'dark'
-              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-              : 'bg-slate-800 text-slate-300 hover:text-white'
+          onClick={() => setMapTileStyle(mapTileStyle === 'light' ? 'satellite' : 'light')}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+            mapTileStyle === 'light'
+              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              : 'bg-slate-100 text-slate-700 hover:text-slate-900'
           }`}
         >
           <Layers className="h-3.5 w-3.5" />
-          {mapTileStyle === 'dark' ? 'GIS Dark' : 'Satellite Imagery'}
+          {mapTileStyle === 'light' ? 'Light GIS' : 'Satellite Imagery'}
         </button>
       </div>
 
-      <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 backdrop-blur-md px-3 py-2.5 rounded-lg border border-slate-800/90 shadow-xl text-xs space-y-2">
-        <div className="font-semibold text-slate-300 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-          <MapPin className="h-3.5 w-3.5 text-emerald-400" /> Prospectivity Legend
+      <div className="absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur-md px-3 py-2.5 rounded-xl border border-slate-200 shadow-lg text-xs space-y-2">
+        <div className="font-bold text-slate-800 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+          <MapPin className="h-3.5 w-3.5 text-emerald-600" /> Prospectivity Legend
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#10b981] border border-emerald-400" />
-            <span className="text-slate-300 font-medium">LOW (&lt;50%)</span>
+            <span className="h-3 w-3 rounded-sm bg-[#10b981] border border-emerald-600" />
+            <span className="text-slate-700 font-semibold">LOW (&lt;50%)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#eab308] border border-yellow-400" />
-            <span className="text-slate-300 font-medium">MODERATE (50-70%)</span>
+            <span className="h-3 w-3 rounded-sm bg-[#eab308] border border-yellow-600" />
+            <span className="text-slate-700 font-semibold">MODERATE (50-70%)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#f97316] border border-orange-400" />
-            <span className="text-slate-300 font-medium">HIGH (70-85%)</span>
+            <span className="h-3 w-3 rounded-sm bg-[#f97316] border border-orange-600" />
+            <span className="text-slate-700 font-semibold">HIGH (70-85%)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#ef4444] border border-red-400" />
-            <span className="text-slate-300 font-medium">VERY HIGH (&gt;85%)</span>
+            <span className="h-3 w-3 rounded-sm bg-[#ef4444] border border-red-600" />
+            <span className="text-slate-700 font-semibold">VERY HIGH (&gt;85%)</span>
           </div>
         </div>
       </div>
